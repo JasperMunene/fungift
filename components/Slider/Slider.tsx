@@ -11,7 +11,7 @@ const Slider = () => {
                 <div className="slider-main h-full w-full flex items-center justify-center gap-10">
                     <div className="sub-img w-[440px] max-md:w-1/2 rounded-b-full overflow-hidden max-md:hidden">
                         <Image
-                            src={'/images/gifting-2.jpg'}
+                            src={'/images/gifting-2.webp'}
                             width={2000}
                             height={1936}
                             alt='gift-image-1'
@@ -27,14 +27,14 @@ const Slider = () => {
                             Gifts Made Easy
                         </div>
                         <div className="text-center">
-                            <Link href='/shop/breadcrumb-img' className="button-main md:mt-8 mt-3">
+                            <Link href='/shop/gifts' className="button-main md:mt-8 mt-3">
                                 Shop Gifts
                             </Link>
                         </div>
                     </div>
                     <div className="sub-img w-[440px] max-md:w-1/2 rounded-t-full overflow-hidden">
                         <Image
-                            src={'/images/gifting-1.jpg'}
+                            src={'/images/gifting-1.webp'}
                             width={2000}
                             height={1936}
                             alt='gift-image-2'
