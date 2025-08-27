@@ -103,10 +103,10 @@ const MenuOne: React.FC<Props> = ({ props }) => {
                             </div>
                         </div>
                         <div className="right flex gap-12">
-                            <div className="max-md:hidden search-icon flex items-center cursor-pointer relative">
-                                <Icon.MagnifyingGlass size={24} color='black' onClick={openModalSearch} />
-                                <div className="line absolute bg-line w-px h-6 -right-6"></div>
-                            </div>
+                            {/*<div className="max-md:hidden search-icon flex items-center cursor-pointer relative">*/}
+                            {/*    <Icon.MagnifyingGlass size={24} color='black' onClick={openModalSearch} />*/}
+                            {/*    <div className="line absolute bg-line w-px h-6 -right-6"></div>*/}
+                            {/*</div>*/}
                             <div className="list-action flex items-center gap-4">
                                 <div className="max-md:hidden wishlist-icon flex items-center cursor-pointer" onClick={openModalWishlist}>
                                     <Icon.Heart size={24} color='black' />

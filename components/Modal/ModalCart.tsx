@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import * as Icon from "@phosphor-icons/react/dist/ssr";
 import { ProductType } from '@/type/ProductType';
@@ -15,6 +14,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
     const [recommendedProducts, setRecommendedProducts] = useState<ProductType[]>([]);
     const [recommendedLoading, setRecommendedLoading] = useState<boolean>(true);
     const [recommendedError, setRecommendedError] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -75,6 +75,40 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
 
     cartState.cartArray.map(item => totalCart += item.price * item.quantity)
 
+    const handleCheckout = async () => {
+        setIsProcessing(true);
+        try {
+            // Prepare line items for the API
+            const lineItems = cartState.cartArray.map(item => ({
+                variantId: `gid://shopify/ProductVariant/${item.id}`, // Fallback if variantId not available
+                quantity: item.quantity,
+                price: item.price
+            }));
+
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ lineItems }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Checkout failed');
+            }
+
+            const data = await response.json();
+
+            // Redirect to Shopify checkout
+            window.location.href = data.webUrl;
+        } catch (error) {
+            console.error('Error during checkout:', error);
+            alert('Checkout failed. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     return (
         <>
             <div className={`modal-cart-block`} onClick={closeModalCart}>
@@ -125,10 +159,10 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                             <div className=''>
                                                 <div className="name text-button">{product.name}</div>
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <div className="product-price text-title">KES {product.price}.00</div>
+                                                    <div className="product-price text-title">KES {product.price}</div>
                                                     {product.originPrice && (
                                                         <div className="product-origin-price text-title text-secondary2">
-                                                            <del>KES {product.originPrice}.00</del>
+                                                            <del>KES {product.originPrice}</del>
                                                         </div>
                                                     )}
                                                 </div>
@@ -167,7 +201,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                             </div>
                         </div>
                         <div className="heading banner mt-3 px-6">
-                            <div className="text">Buy <span className="text-button"> KES <span className="more-price">{moneyForFreeship - totalCart > 0 ? (<>{moneyForFreeship - totalCart}</>) : (0)}</span>.00 </span>
+                            <div className="text">Buy <span className="text-button"> KES <span className="more-price">{moneyForFreeship - totalCart > 0 ? (<>{moneyForFreeship - totalCart}</>) : (0)}</span> </span>
                                 <span>more to get </span>
                                 <span className="text-button">freeship</span></div>
                             <div className="tow-bar-block mt-3">
@@ -206,7 +240,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                                     {product.selectedSize || (product.sizes && product.sizes[0]) || 'N/A'}/
                                                     {product.selectedColor || (product.variation && product.variation[0] && product.variation[0].color) || 'N/A'}
                                                 </div>
-                                                <div className="product-price text-title">KES {product.price}.00</div>
+                                                <div className="product-price text-title">KES {product.price}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -239,24 +273,17 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                             </div>
                             <div className="flex items-center justify-between pt-6 px-6">
                                 <div className="heading5">Subtotal</div>
-                                <div className="heading5">${totalCart}.00</div>
+                                <div className="heading5">KES {totalCart}</div>
                             </div>
                             <div className="block-button text-center p-6">
                                 <div className="flex items-center gap-4">
-                                    <Link
-                                        href={'/cart'}
-                                        className='button-main basis-1/2 bg-white border border-black text-black text-center uppercase'
-                                        onClick={closeModalCart}
+                                    <button
+                                        className={`button-main basis-full text-center uppercase ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        onClick={handleCheckout}
+                                        disabled={isProcessing || cartState.cartArray.length === 0}
                                     >
-                                        View cart
-                                    </Link>
-                                    <Link
-                                        href={'/checkout'}
-                                        className='button-main basis-1/2 text-center uppercase'
-                                        onClick={closeModalCart}
-                                    >
-                                        Check Out
-                                    </Link>
+                                        {isProcessing ? 'Processing...' : 'Check Out'}
+                                    </button>
                                 </div>
                                 <div onClick={closeModalCart} className="text-button-uppercase mt-4 text-center has-line-before cursor-pointer inline-block">Or continue shopping</div>
                             </div>

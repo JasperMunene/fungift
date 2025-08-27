@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Suspense } from "react"
 import GiftCard from '../Product/GiftCard'
 import { ProductType } from '@/type/ProductType'
 import { Swiper, SwiperSlide } from 'swiper/react';

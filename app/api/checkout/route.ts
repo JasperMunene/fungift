@@ -1,47 +1,46 @@
 // app/api/checkout/route.ts
 import { NextResponse } from 'next/server';
 
-
-
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const lineItems = body.lineItems;
+        const { lineItems } = body; // Only need lineItems now
 
         if (!Array.isArray(lineItems) || lineItems.length === 0) {
             return NextResponse.json({ error: 'lineItems required' }, { status: 400 });
         }
 
         const query = `
-  mutation cartCreate($input: CartInput!) {
-    cartCreate(input: $input) {
-      cart {
-        id
-        checkoutUrl
-        lines(first: 10) {
-          edges {
-            node {
-              id
-              quantity
-              merchandise {
-                ... on ProductVariant {
-                  id
-                  product {
-                    title
-                  }
+            mutation cartCreate($input: CartInput!) {
+                cartCreate(input: $input) {
+                    cart {
+                        id
+                        checkoutUrl
+                        lines(first: 10) {
+                            edges {
+                                node {
+                                    id
+                                    quantity
+                                    merchandise {
+                                        ... on ProductVariant {
+                                            id
+                                            product {
+                                                title
+                                                id
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
                 }
-              }
             }
-          }
-        }
-      }
-      userErrors {
-        field
-        message
-      }
-    }
-  }
-`;
+        `;
 
         const variables = {
             input: {
@@ -90,7 +89,25 @@ export async function POST(req: Request) {
             throw new Error('No checkout URL returned from Shopify');
         }
 
-// Add return URL parameters to the checkout URL
+        // Store minimal purchase information in your database
+        try {
+            const purchaseData = {
+                cartId: cart.id,
+                lineItems,
+                status: 'pending'
+            };
+
+            // Save to your database - just the cart ID and line items
+            console.log('Minimal purchase data to save:', purchaseData);
+
+            // Example: await saveMinimalPurchaseToDatabase(purchaseData);
+
+        } catch (dbError) {
+            console.error('Failed to save minimal purchase data:', dbError);
+            // Continue with checkout even if DB save fails
+        }
+
+        // Add return URL parameters to the checkout URL
         const checkoutUrl = new URL(cart.checkoutUrl);
         checkoutUrl.searchParams.set('return_to', `${process.env.NEXT_PUBLIC_SITE_URL}/thank-you`);
 

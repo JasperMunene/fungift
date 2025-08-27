@@ -6,6 +6,7 @@ import ModalWishlist from '@/components/Modal/ModalWishlist'
 import ModalQuickview from '@/components/Modal/ModalQuickview'
 import ModalCompare from '@/components/Modal/ModalCompare'
 import ModalGiftCardQuickview from '@/components/Modal/ModalGiftCardQuickview'
+import ModalSearch from '@/components/Modal/ModalSearch'
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from '@/components/providers';
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
           <ModalCart serverTimeLeft={serverTimeLeft} />
           <ModalWishlist />
+          <ModalSearch />
           <ModalQuickview />
           <ModalCompare />
           <ModalGiftCardQuickview />

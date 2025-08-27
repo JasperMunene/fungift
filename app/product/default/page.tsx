@@ -19,9 +19,7 @@ export default async function ProductPage({ params }: PageProps) {
     try {
         // server call to fetch product by handle
         const res = await getProduct(slug);
-
-        // get product from returned shape (shopify-service returns the data shape)
-        const shopifyProduct = (res as any).product;
+        const shopifyProduct = (res as any)?.product;
 
         if (!shopifyProduct) {
             return notFound();

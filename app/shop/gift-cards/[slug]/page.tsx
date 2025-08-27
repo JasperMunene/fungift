@@ -16,7 +16,8 @@ interface PageProps {
 export async function generateStaticParams() {
     try {
         // adjust collection handle & limit as needed
-        const products = await getCollectionProductsDetailed('gifts', 250);
+        const products = await getCollectionProductsDetailed('gift-cards', 250);
+
         return (products || [])
             .map(p => p.handle)
             .filter(Boolean)

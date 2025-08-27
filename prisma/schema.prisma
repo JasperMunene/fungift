@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Change to your DB
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  createdAt DateTime   @default(now())
+  purchases Purchase[]
+}
+
+model Purchase {
+  id               String        @id @default(uuid())
+  customerId       String
+  amount           Decimal       @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  paymentStatus    PaymentStatus @default(PENDING)
+  paymentProvider  String?
+  paymentReference String?
+  createdAt        DateTime      @default(now())
+  paidAt           DateTime?
+
+  customer  Customer   @relation(fields: [customerId], references: [id])
+  giftCards GiftCard[]
+}
+
+model GiftCard {
+  id             String     @id @default(uuid())
+  code           String     @unique
+  amount         Decimal    @db.Decimal(10, 2)
+  currency       String     @default("USD")
+  status         CardStatus @default(PENDING)
+  recipientEmail String
+  purchaseId     String
+  createdAt      DateTime   @default(now())
+  redeemedAt     DateTime?
+
+  purchase    Purchase     @relation(fields: [purchaseId], references: [id])
+  redemptions Redemption[]
+}
+
+model Redemption {
+  id         String   @id @default(uuid())
+  giftCardId String
+  storeName  String
+  redeemedAt DateTime @default(now())
+  amountUsed Decimal  @db.Decimal(10, 2)
+
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id])
+}
+
+// Enums
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum CardStatus {
+  PENDING
+  ACTIVE
+  REDEEMED
+}

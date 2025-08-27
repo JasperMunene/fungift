@@ -253,11 +253,11 @@ export default function ProductDetail({ product, shopifyProduct }: Props) {
 
                 <div className="price-block flex items-center gap-3 mb-4">
                     <div className="product-price text-2xl font-bold">
-                        ${!isNaN(price) ? price.toFixed(2) : '0.00'}
+                        KES {!isNaN(price) ? price.toFixed(2) : '0.00'}
                     </div>
                     {product.sale && originPrice > price && !isGiftCard && (
                         <div className="product-origin-price text-lg text-secondary2 line-through">
-                            ${originPrice.toFixed(2)}
+                            KES {originPrice.toFixed(2)}
                         </div>
                     )}
                 </div>
