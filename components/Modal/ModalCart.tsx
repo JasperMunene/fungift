@@ -75,15 +75,31 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
 
     cartState.cartArray.map(item => totalCart += item.price * item.quantity)
 
+    // Update the handleCheckout function in your ModalCart component
     const handleCheckout = async () => {
         setIsProcessing(true);
         try {
             // Prepare line items for the API
-            const lineItems = cartState.cartArray.map(item => ({
-                variantId: `gid://shopify/ProductVariant/${item.id}`, // Fallback if variantId not available
-                quantity: item.quantity,
-                price: item.price
-            }));
+            const lineItems = cartState.cartArray.map(item => {
+                const lineItem: any = {
+                    variantId: item.id,
+                    quantity: item.quantity,
+                };
+
+                // If this is a gift card, add custom attributes
+                if (item.type === 'gift-card' || item.tags?.includes('gift-card')) {
+                    lineItem.customAttributes = [
+                        {
+                            key: "amount",
+                            value: item.price.toString()
+                        }
+                    ];
+                }
+
+                return lineItem;
+            });
+
+            console.log('Sending line items to API:', lineItems);
 
             const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -94,7 +110,8 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
             });
 
             if (!response.ok) {
-                throw new Error('Checkout failed');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Checkout failed');
             }
 
             const data = await response.json();

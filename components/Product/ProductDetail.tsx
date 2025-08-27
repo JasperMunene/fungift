@@ -401,17 +401,17 @@ export default function ProductDetail({ product, shopifyProduct }: Props) {
                         Wishlist
                     </button>
 
-                    <button
-                        className={`action-btn flex-1 h-12 rounded-full border border-line flex items-center justify-center gap-2 transition-colors ${compareState.compareArray.some(item => item.id === product.id) ? 'bg-green/10 text-green border-green/20' : 'hover:bg-gray-100'}`}
-                        onClick={handleAddToCompare}
-                    >
-                        {compareState.compareArray.some(item => item.id === product.id) ? (
-                            <CheckCircle size={20} weight="fill" />
-                        ) : (
-                            <Repeat size={20} />
-                        )}
-                        Compare
-                    </button>
+                    {/*<button*/}
+                    {/*    className={`action-btn flex-1 h-12 rounded-full border border-line flex items-center justify-center gap-2 transition-colors ${compareState.compareArray.some(item => item.id === product.id) ? 'bg-green/10 text-green border-green/20' : 'hover:bg-gray-100'}`}*/}
+                    {/*    onClick={handleAddToCompare}*/}
+                    {/*>*/}
+                    {/*    {compareState.compareArray.some(item => item.id === product.id) ? (*/}
+                    {/*        <CheckCircle size={20} weight="fill" />*/}
+                    {/*    ) : (*/}
+                    {/*        <Repeat size={20} />*/}
+                    {/*    )}*/}
+                    {/*    Compare*/}
+                    {/*</button>*/}
                 </div>
 
                 {/* Product Meta */}

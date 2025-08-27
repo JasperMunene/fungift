@@ -5,30 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cd3389b2-5e2d-4c0e-8b19-be5385d55d39" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/api/webhooks/shopify/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/components/Modal/ModalSearch.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/db.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/prisma.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/shopify-search.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/checkout/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/checkout/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/test-shopify/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/test-shopify/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/product/default/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/product/default/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/shop/gift-cards/[slug]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/shop/gift-cards/[slug]/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/shop/gift-cards/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/shop/gift-cards/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/shop/gifts/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/shop/gifts/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Header/Menu/MenuOne.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Header/Menu/MenuOne.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Modal/ModalCart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Modal/ModalCart.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Modal/ModalQuickview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Modal/ModalQuickview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Product/Product.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Product/Product.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Product/ProductDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Product/ProductDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/home/trending-gift-cards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/home/trending-gift-cards.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/layout/footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/layout/footer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hooks/useShopifyData.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/next.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/shopify-collections.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/shopify-collections.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/type/shopify.ts" beforeDir="false" afterPath="$PROJECT_DIR$/type/shopify.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +104,7 @@
       <workItem from="1756218507844" duration="11992000" />
       <workItem from="1756233195584" duration="12550000" />
       <workItem from="1756268130041" duration="1267000" />
-      <workItem from="1756288228566" duration="17543000" />
+      <workItem from="1756288228566" duration="31097000" />
     </task>
     <servers />
   </component>

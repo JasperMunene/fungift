@@ -8,8 +8,12 @@ export async function GET() {
             query {
                 shop {
                     name
-                    primaryDomain { url }
-                    paymentSettings { currencyCode }
+                    primaryDomain {
+                        url
+                    }
+                    paymentSettings {
+                        currencyCode
+                    }
                 }
                 products(first: 1) {
                     edges {

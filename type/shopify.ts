@@ -1,7 +1,7 @@
 // types/shopify.ts
 export interface ShopifyImage {
     url: string;
-    altText: string | null;
+    altText?: string | undefined;
 }
 
 export interface ShopifyPrice {

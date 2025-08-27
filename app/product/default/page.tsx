@@ -19,11 +19,15 @@ export default async function ProductPage({ params }: PageProps) {
     try {
         // server call to fetch product by handle
         const res = await getProduct(slug);
-        const shopifyProduct = (res as any)?.product;
 
-        if (!shopifyProduct) {
+        // Check if res exists and has the expected structure
+        if (!res || !res.product) {
+            console.error('Product not found or invalid response structure:', res);
             return notFound();
         }
+
+        // get product from returned shape (shopify-service returns the data shape)
+        const shopifyProduct = res.product;
 
         // transform for your frontend product type
         const product: ProductType = transformShopifyProductDetailed(shopifyProduct);
