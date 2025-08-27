@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import * as Icon from "@phosphor-icons/react/dist/ssr";
-import productData from '@/data/Product.json'
 import { ProductType } from '@/type/ProductType';
 import { useModalCartContext } from '@/context/ModalCartContext'
 import { useCart } from '@/context/CartContext'
@@ -13,6 +12,9 @@ import CountdownTimeType from '@/type/CountdownType';
 
 const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) => {
     const [timeLeft, setTimeLeft] = useState(serverTimeLeft);
+    const [recommendedProducts, setRecommendedProducts] = useState<ProductType[]>([]);
+    const [recommendedLoading, setRecommendedLoading] = useState<boolean>(true);
+    const [recommendedError, setRecommendedError] = useState<string | null>(null);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -25,6 +27,34 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
     const [activeTab, setActiveTab] = useState<string | undefined>('')
     const { isModalOpen, closeModalCart } = useModalCartContext();
     const { cartState, addToCart, removeFromCart, updateCart } = useCart()
+
+    // Fetch recommended products from Shopify
+    const fetchRecommendedProducts = useCallback(async () => {
+        try {
+            setRecommendedLoading(true);
+            setRecommendedError(null);
+
+            // Dynamically import Shopify functions to reduce initial bundle size
+            const { getCollectionProducts, transformShopifyProduct } = await import('@/lib/shopify-collections');
+
+            // Fetch products from a collection (e.g., 'featured' or 'best-sellers')
+            const shopifyProducts = await getCollectionProducts('featured', 4);
+            const transformedProducts = shopifyProducts.map(transformShopifyProduct);
+
+            setRecommendedProducts(transformedProducts);
+        } catch (err) {
+            setRecommendedError(err instanceof Error ? err.message : 'Failed to fetch recommended products');
+            console.error('Error fetching recommended products:', err);
+        } finally {
+            setRecommendedLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isModalOpen) {
+            fetchRecommendedProducts();
+        }
+    }, [isModalOpen, fetchRecommendedProducts]);
 
     const handleAddToCart = (productItem: ProductType) => {
         if (!cartState.cartArray.find(item => item.id === productItem.id)) {
@@ -55,37 +85,67 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                     <div className="left w-1/2 border-r border-line py-6 max-md:hidden">
                         <div className="heading5 px-6 pb-3">You May Also Like</div>
                         <div className="list px-6">
-                            {productData.slice(0, 4).map((product) => (
-                                <div key={product.id} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
-                                    <div className="infor flex items-center gap-5">
-                                        <div className="bg-img">
-                                            <Image
-                                                src={product.images[0]}
-                                                width={300}
-                                                height={300}
-                                                alt={product.name}
-                                                className='w-[100px] aspect-square flex-shrink-0 rounded-lg'
-                                            />
-                                        </div>
-                                        <div className=''>
-                                            <div className="name text-button">{product.name}</div>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <div className="product-price text-title">${product.price}.00</div>
-                                                <div className="product-origin-price text-title text-secondary2"><del>${product.originPrice}.00</del></div>
+                            {recommendedLoading ? (
+                                // Skeleton loading for recommended products
+                                [...Array(4)].map((_, i) => (
+                                    <div key={i} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
+                                        <div className="infor flex items-center gap-5 w-full">
+                                            <div className="bg-img">
+                                                <div className="w-[100px] h-[100px] bg-gray-200 rounded-lg animate-pulse"></div>
+                                            </div>
+                                            <div className='w-full'>
+                                                <div className="name h-4 bg-gray-200 rounded-md w-3/4 animate-pulse"></div>
+                                                <div className="flex items-center gap-2 mt-3">
+                                                    <div className="h-4 bg-gray-200 rounded-md w-1/3 animate-pulse"></div>
+                                                    <div className="h-4 bg-gray-200 rounded-md w-1/4 animate-pulse"></div>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="text-xl bg-gray-200 w-10 h-10 rounded-xl border border-gray-300 animate-pulse"></div>
                                     </div>
-                                    <div
-                                        className="text-xl bg-white w-10 h-10 rounded-xl border border-black flex items-center justify-center duration-300 cursor-pointer hover:bg-black hover:text-white"
-                                        onClick={e => {
-                                            e.stopPropagation();
-                                            handleAddToCart(product)
-                                        }}
-                                    >
-                                        <Icon.Handbag />
+                                ))
+                            ) : recommendedError ? (
+                                <div className="text-red-500 py-5">Error loading recommendations</div>
+                            ) : recommendedProducts.length === 0 ? (
+                                <div className="text-gray-500 py-5">No recommendations available</div>
+                            ) : (
+                                recommendedProducts.map((product) => (
+                                    <div key={product.id} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
+                                        <div className="infor flex items-center gap-5">
+                                            <div className="bg-img">
+                                                <Image
+                                                    src={product.images[0]}
+                                                    width={100}
+                                                    height={100}
+                                                    alt={product.name}
+                                                    className='w-[100px] aspect-square flex-shrink-0 rounded-lg'
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            <div className=''>
+                                                <div className="name text-button">{product.name}</div>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <div className="product-price text-title">KES {product.price}.00</div>
+                                                    {product.originPrice && (
+                                                        <div className="product-origin-price text-title text-secondary2">
+                                                            <del>KES {product.originPrice}.00</del>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            className="text-xl bg-white w-10 h-10 rounded-xl border border-black flex items-center justify-center duration-300 cursor-pointer hover:bg-black hover:text-white"
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                handleAddToCart(product)
+                                            }}
+                                        >
+                                            <Icon.Handbag />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                     <div className="right cart-block md:w-1/2 w-full py-6 relative overflow-hidden">
@@ -107,7 +167,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                             </div>
                         </div>
                         <div className="heading banner mt-3 px-6">
-                            <div className="text">Buy <span className="text-button"> $<span className="more-price">{moneyForFreeship - totalCart > 0 ? (<>{moneyForFreeship - totalCart}</>) : (0)}</span>.00 </span>
+                            <div className="text">Buy <span className="text-button"> KES <span className="more-price">{moneyForFreeship - totalCart > 0 ? (<>{moneyForFreeship - totalCart}</>) : (0)}</span>.00 </span>
                                 <span>more to get </span>
                                 <span className="text-button">freeship</span></div>
                             <div className="tow-bar-block mt-3">
@@ -124,10 +184,11 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                         <div className="bg-img w-[100px] aspect-square flex-shrink-0 rounded-lg overflow-hidden">
                                             <Image
                                                 src={product.images[0]}
-                                                width={300}
-                                                height={300}
+                                                width={100}
+                                                height={100}
                                                 alt={product.name}
                                                 className='w-full h-full'
+                                                loading="lazy"
                                             />
                                         </div>
                                         <div className='w-full'>
@@ -145,7 +206,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                                     {product.selectedSize || (product.sizes && product.sizes[0]) || 'N/A'}/
                                                     {product.selectedColor || (product.variation && product.variation[0] && product.variation[0].color) || 'N/A'}
                                                 </div>
-                                                <div className="product-price text-title">${product.price}.00</div>
+                                                <div className="product-price text-title">KES {product.price}.00</div>
                                             </div>
                                         </div>
                                     </div>
