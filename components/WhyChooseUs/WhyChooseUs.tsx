@@ -10,7 +10,7 @@ const WhyChooseUs = () => {
                         <div className="left lg:w-1/2 sm:w-2/3 w-full lg:pr-4">
                             <div className="bg-img">
                                 <Image
-                                    src={'/images/gifting-3.jpg'}
+                                    src={'/images/gifting-3.webp'}
                                     width={2000}
                                     height={2000}
                                     alt='gift-display'
