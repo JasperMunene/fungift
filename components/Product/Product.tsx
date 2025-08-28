@@ -87,7 +87,7 @@ const Product: React.FC<ProductProps> = ({ data, type, style }) => {
         const slugify = (text: string) =>
             text.toLowerCase().replace(/\s+/g, "-");
         // redirect to shop with category selected
-        router.push(`/shop/gift-cards/${slugify(data.name)}`);
+        router.push(`/shop/gifts/${slugify(data.name)}`);
     };
 
     let percentSale = Math.floor(100 - ((data.price / data.originPrice) * 100))
