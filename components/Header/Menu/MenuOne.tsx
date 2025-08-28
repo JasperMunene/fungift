@@ -86,7 +86,7 @@ const MenuOne: React.FC<Props> = ({ props }) => {
                                     <li className='h-full'>
                                         <Link
                                             href="/shop/gift-cards"
-                                            className={`text-button-uppercase duration-300 h-full flex items-center justify-center ${pathname.includes('/shop/gift-cards') ? 'active' : ''}`}
+                                            className={`text-button-uppercase duration-300 h-full flex items-center justify-center px-4 hover:text-green transition-colors ${pathname.includes('/shop/gift-cards') ? 'active text-green' : ''}`}
                                         >
                                             Gift Cards
                                         </Link>
@@ -94,7 +94,7 @@ const MenuOne: React.FC<Props> = ({ props }) => {
                                     <li className='h-full'>
                                         <Link
                                             href="/shop/gifts"
-                                            className={`text-button-uppercase duration-300 h-full flex items-center justify-center ${pathname.includes('/shop/gifts') ? 'active' : ''}`}
+                                            className={`text-button-uppercase duration-300 h-full flex items-center justify-center px-4 hover:text-green transition-colors ${pathname.includes('/shop/gifts') ? 'active text-green' : ''}`}
                                         >
                                             Gifts
                                         </Link>

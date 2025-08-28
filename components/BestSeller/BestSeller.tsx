@@ -110,10 +110,10 @@ const BestSeller: React.FC<Props> = ({
     }
 
     return (
-        <div className="tab-features-block md:pt-20 pt-10">
+        <div className="tab-features-block section-padding">
             <div className="container">
-                <div className="heading3 text-center">{collectionTitle}</div>
-                <div className="list-product hide-product-sold section-swiper-navigation style-outline style-small-border md:mt-10 mt-6">
+                <div className="heading3 text-center mb-8">{collectionTitle}</div>
+                <div className="list-product hide-product-sold section-swiper-navigation style-outline style-small-border">
                     <Swiper
                         spaceBetween={12}
                         slidesPerView={2}

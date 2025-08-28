@@ -5,17 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cd3389b2-5e2d-4c0e-8b19-be5385d55d39" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/api/get-variants/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/test-shopify/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/test-shopify/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/checkout/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/checkout/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/cart/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/cart/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/product/default/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/product/default/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/shop/gift-cards/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/shop/gift-cards/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/shop/gifts/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/shop/gifts/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/product/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/product/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/BestSeller/BestSeller.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/BestSeller/BestSeller.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Header/Menu/MenuOne.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Header/Menu/MenuOne.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Modal/ModalCart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Modal/ModalCart.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Modal/ModalGiftCardQuickview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Modal/ModalGiftCardQuickview.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Modal/ModalQuickview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Modal/ModalQuickview.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Product/Product.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Product/Product.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Product/ProductDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Product/ProductDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/shopify-collections.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/shopify-collections.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/type/shopify.ts" beforeDir="false" afterPath="$PROJECT_DIR$/type/shopify.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Product/GiftCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/Product/GiftCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/home/trending-gift-cards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/home/trending-gift-cards.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/globals.scss" beforeDir="false" afterPath="$PROJECT_DIR$/styles/globals.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/styles.scss" beforeDir="false" afterPath="$PROJECT_DIR$/styles/styles.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/type/ProductType.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/type/ProductType.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,6 +67,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;/home/jasper-munene/Downloads/project-bolt-sb1-whpzdnjc/project/node_modules/typescript/lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -104,7 +116,8 @@
       <workItem from="1756218507844" duration="11992000" />
       <workItem from="1756233195584" duration="12550000" />
       <workItem from="1756268130041" duration="1267000" />
-      <workItem from="1756288228566" duration="31097000" />
+      <workItem from="1756288228566" duration="37286000" />
+      <workItem from="1756341037085" duration="3485000" />
     </task>
     <servers />
   </component>

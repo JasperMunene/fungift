@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import 'icomoon/style.css';
 @import 'custom-swiper.scss';
 @import 'loading.scss';
@@ -21,6 +25,3 @@
 @import 'layout/benefit.scss';
 @import 'layout/newsletter.scss';
 @import 'layout/featured-product.scss';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

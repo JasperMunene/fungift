@@ -3,7 +3,6 @@
 // Quickview.tsx
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ProductType } from '@/type/ProductType';
 import * as Icon from "@phosphor-icons/react/dist/ssr";
 import { useModalQuickviewContext } from '@/context/ModalQuickviewContext';
 import { useCart } from '@/context/CartContext';
@@ -12,13 +11,13 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useModalWishlistContext } from '@/context/ModalWishlistContext';
 import { useCompare } from '@/context/CompareContext'
 import { useModalCompareContext } from '@/context/ModalCompareContext'
-import Rate from '../Other/Rate';
-import ModalSizeguide from './ModalSizeguide';
+
 
 const ModalQuickview = () => {
     const [photoIndex, setPhotoIndex] = useState(0)
     const [openPopupImg, setOpenPopupImg] = useState(false)
     const [openSizeGuide, setOpenSizeGuide] = useState<boolean>(false)
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
     const { selectedProduct, closeQuickview } = useModalQuickviewContext()
     const [activeColor, setActiveColor] = useState<string>('')
     const [activeSize, setActiveSize] = useState<string>('')
@@ -70,6 +69,126 @@ const ModalQuickview = () => {
             }
             openModalCart()
             closeQuickview()
+        }
+    };
+
+    const handleBuyItNow = async () => {
+        if (!selectedProduct) return;
+
+        // Validation - ensure size and color are selected if required
+        if (selectedProduct.sizes && selectedProduct.sizes.length > 0 && !activeSize) {
+            alert('Please select a size');
+            return;
+        }
+
+        if (selectedProduct.variation && selectedProduct.variation.length > 0 && !activeColor) {
+            alert('Please select a color');
+            return;
+        }
+
+        setIsCheckoutLoading(true);
+
+        try {
+            // Debug: Log the product data to see what's available
+            console.log('Selected Product:', selectedProduct);
+            console.log('Active Size:', activeSize);
+            console.log('Active Color:', activeColor);
+
+            // Get the correct variant ID - MUST be a ProductVariant ID, not Product ID
+            let variantId = selectedProduct.variantId;
+
+            // If no variantId but we have variations, try to find the matching variant
+            if (!variantId && selectedProduct.variation && activeColor) {
+                const selectedVariation = selectedProduct.variation.find(v => v.color === activeColor);
+                variantId = selectedVariation?.variantId || selectedVariation?.id;
+            }
+
+            // Check if we have a valid variant ID or if it's actually a product ID
+            const needsVariantFetch = !variantId ||
+                variantId.includes('gid://shopify/Product/') ||
+                !variantId.includes('gid://shopify/ProductVariant/');
+
+            // If we need to fetch variant ID from Shopify
+            if (needsVariantFetch) {
+                console.log('No variant ID found, fetching from Shopify...');
+
+                // Get the first available variant for this product
+                const variantsResponse = await fetch(`/api/get-variants?productId=${encodeURIComponent(selectedProduct.id)}`);
+
+                if (variantsResponse.ok) {
+                    const variantsData = await variantsResponse.json();
+                    const variants = variantsData.variants;
+
+                    if (variants && variants.length > 0) {
+                        // Use the first available variant or find one matching selected options
+                        let selectedVariant = variants[0]; // Default to first variant
+
+                        // Try to find variant matching selected color/size
+                        if (activeColor || activeSize) {
+                            const matchingVariant = variants.find((v: any) =>
+                                v.selectedOptions.some((opt: any) =>
+                                    (opt.name.toLowerCase() === 'color' && opt.value.toLowerCase() === activeColor?.toLowerCase()) ||
+                                    (opt.name.toLowerCase() === 'size' && opt.value.toLowerCase() === activeSize?.toLowerCase())
+                                )
+                            );
+                            if (matchingVariant) {
+                                selectedVariant = matchingVariant;
+                            }
+                        }
+
+                        variantId = selectedVariant.id;
+                        console.log('Found variant ID:', variantId);
+                    } else {
+                        throw new Error('No variants found for this product');
+                    }
+                } else {
+                    throw new Error('Failed to fetch product variants');
+                }
+            }
+
+            // Validate that we have a variant ID in the correct format
+            if (!variantId || !variantId.includes('gid://shopify/ProductVariant/')) {
+                throw new Error(`Invalid variant ID format: ${variantId}. Must be a Shopify ProductVariant Global ID.`);
+            }
+
+            // Prepare line items for checkout - simplified structure
+            const lineItems = [{
+                variantId: variantId,
+                quantity: selectedProduct.quantityPurchase || 1,
+            }];
+
+            console.log('Line items being sent:', lineItems);
+
+            // Call the checkout API
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lineItems
+                }),
+            });
+
+            const result = await response.json();
+            console.log('Checkout API response:', result);
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Checkout failed');
+            }
+
+            // Redirect to Shopify checkout
+            if (result.webUrl) {
+                window.location.href = result.webUrl;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            alert(error.message || 'Failed to initiate checkout. Please try again.');
+        } finally {
+            setIsCheckoutLoading(false);
         }
     };
 
@@ -223,7 +342,12 @@ const ModalQuickview = () => {
                                         <div onClick={handleAddToCart} className="button-main w-full text-center bg-white text-black border border-black">Add To Cart</div>
                                     </div>
                                     <div className="button-block mt-5">
-                                        <div className="button-main w-full text-center">Buy It Now</div>
+                                        <div
+                                            onClick={handleBuyItNow}
+                                            className={`button-main w-full text-center ${isCheckoutLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                        >
+                                            {isCheckoutLoading ? 'Processing...' : 'Buy It Now'}
+                                        </div>
                                     </div>
 
                                     <div className="list-payment mt-7">

@@ -1,7 +1,7 @@
 'use client'
 
 // GiftCardQuickview.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { GiftCardType } from '@/type/GiftCardType';
 import { ProductType } from '@/type/ProductType';
@@ -16,22 +16,60 @@ const ModalGiftCardQuickview = () => {
     const [photoIndex, setPhotoIndex] = useState(0)
     const { selectedGiftCard, closeGiftCardQuickview } = useModalGiftCardQuickviewContext()
     const [selectedAmount, setSelectedAmount] = useState<number>(0)
-    const [recipientName, setRecipientName] = useState<string>('')
-    const [recipientEmail, setRecipientEmail] = useState<string>('')
-    const [senderName, setSenderName] = useState<string>('')
-    const [personalMessage, setPersonalMessage] = useState<string>('')
-    const [deliveryDate, setDeliveryDate] = useState<string>('')
+    const [selectedVariantId, setSelectedVariantId] = useState<string>('')
+    const [giftCardVariants, setGiftCardVariants] = useState<any[]>([])
+    const [isLoadingVariants, setIsLoadingVariants] = useState(false)
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
     const { addToCart, updateCart, cartState } = useCart()
     const { openModalCart } = useModalCartContext()
     const { addToWishlist, removeFromWishlist, wishlistState } = useWishlist()
     const { openModalWishlist } = useModalWishlistContext()
 
-    // Predefined gift card amounts
-    const giftCardAmounts = [25, 50, 100, 150, 200, 300, 500]
+    // Fetch gift card variants from Shopify when component mounts or gift card changes
+    useEffect(() => {
+        if (selectedGiftCard?.id) {
+            fetchGiftCardVariants();
+        }
+    }, [selectedGiftCard?.id]);
 
-    const handleSelectAmount = (amount: number) => {
-        setSelectedAmount(amount)
-    }
+    const fetchGiftCardVariants = async () => {
+        if (!selectedGiftCard?.id) return;
+
+        setIsLoadingVariants(true);
+        try {
+            const response = await fetch(`/api/get-variants?productId=${encodeURIComponent(selectedGiftCard.id)}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch gift card variants');
+            }
+
+            const data = await response.json();
+            console.log('Gift card variants:', data.variants);
+
+            // Sort variants by price (amount)
+            const sortedVariants = data.variants.sort((a: any, b: any) =>
+                parseFloat(a.price.amount) - parseFloat(b.price.amount)
+            );
+
+            setGiftCardVariants(sortedVariants);
+
+        } catch (error) {
+            console.error('Error fetching gift card variants:', error);
+            // Fallback to default amounts if API fails
+            setGiftCardVariants([
+                { id: 'fallback-25', price: { amount: '25.00', currencyCode: 'USD' }, title: '$25 Gift Card', availableForSale: true },
+                { id: 'fallback-50', price: { amount: '50.00', currencyCode: 'USD' }, title: '$50 Gift Card', availableForSale: true },
+                { id: 'fallback-100', price: { amount: '100.00', currencyCode: 'USD' }, title: '$100 Gift Card', availableForSale: true },
+            ]);
+        } finally {
+            setIsLoadingVariants(false);
+        }
+    };
+
+    const handleSelectAmount = (amount: number, variantId: string) => {
+        setSelectedAmount(amount);
+        setSelectedVariantId(variantId);
+    };
 
     const convertGiftCardToProduct = (giftCard: GiftCardType, details: any): ProductType => {
         return {
@@ -46,19 +84,15 @@ const ModalGiftCardQuickview = () => {
             type: giftCard.type || 'gift-card',
             originPrice: giftCard.originPrice || details.selectedAmount,
             price: details.selectedAmount,
+            variantId: details.selectedVariantId,
         }
-
     };
 
     const handleAddToCart = () => {
-        if (selectedGiftCard && selectedAmount > 0) {
+        if (selectedGiftCard && selectedAmount > 0 && selectedVariantId) {
             const giftCardDetails = {
                 selectedAmount,
-                recipientName,
-                recipientEmail,
-                senderName,
-                personalMessage,
-                deliveryDate,
+                selectedVariantId,
             };
 
             const product = convertGiftCardToProduct(selectedGiftCard, giftCardDetails);
@@ -70,12 +104,77 @@ const ModalGiftCardQuickview = () => {
             }
             openModalCart()
             closeGiftCardQuickview()
+        } else {
+            alert('Please select a gift card amount');
+        }
+    };
+
+    const handleBuyItNow = async () => {
+        if (!selectedGiftCard || !selectedAmount || !selectedVariantId) {
+            alert('Please select a gift card amount');
+            return;
+        }
+
+        setIsCheckoutLoading(true);
+
+        try {
+            console.log('Selected Gift Card:', selectedGiftCard);
+            console.log('Selected Amount:', selectedAmount);
+            console.log('Selected Variant ID:', selectedVariantId);
+
+            // Validate variant ID format
+            if (!selectedVariantId.includes('gid://shopify/ProductVariant/')) {
+                throw new Error(`Invalid variant ID format: ${selectedVariantId}`);
+            }
+
+            // Prepare line items for checkout
+            const lineItems = [{
+                variantId: selectedVariantId,
+                quantity: 1,
+            }];
+
+            console.log('Line items being sent:', lineItems);
+
+            // Call the checkout API
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lineItems
+                }),
+            });
+
+            const result = await response.json();
+            console.log('Checkout API response:', result);
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Checkout failed');
+            }
+
+            // Redirect to Shopify checkout
+            if (result.webUrl) {
+                console.log('Redirecting to:', result.webUrl);
+                window.location.href = result.webUrl;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+
+        } catch (error: any) {
+            console.error('Gift card checkout error:', error);
+            alert(error.message || 'Failed to initiate checkout. Please try again.');
+        } finally {
+            setIsCheckoutLoading(false);
         }
     };
 
     const handleAddToWishlist = () => {
         if (selectedGiftCard) {
-            const product = convertGiftCardToProduct(selectedGiftCard, { selectedAmount });
+            const product = convertGiftCardToProduct(selectedGiftCard, {
+                selectedAmount: selectedAmount || 25, // Default amount for wishlist
+                selectedVariantId: selectedVariantId || (giftCardVariants[0]?.id || '')
+            });
 
             if (wishlistState.wishlistArray.some(item => item.id === product.id)) {
                 removeFromWishlist(product.id);
@@ -85,7 +184,8 @@ const ModalGiftCardQuickview = () => {
         }
         openModalWishlist();
     };
-    const isFormValid = selectedAmount > 0 && recipientName.trim() && recipientEmail.trim() && senderName.trim()
+
+    const isFormValid = selectedAmount > 0 && selectedVariantId;
 
     return (
         <>
@@ -145,7 +245,7 @@ const ModalGiftCardQuickview = () => {
 
                                 <div className="mt-5 pb-6 border-b border-line">
                                     {selectedAmount > 0 && (
-                                        <div className="product-price heading5">${selectedAmount}.00</div>
+                                        <div className="product-price heading5">KES {selectedAmount}.00</div>
                                     )}
                                     <div className='desc text-secondary mt-3'>{selectedGiftCard?.description}</div>
                                 </div>
@@ -153,102 +253,79 @@ const ModalGiftCardQuickview = () => {
                                 <div className="list-action mt-6">
                                     {/* Gift Card Amount Selection */}
                                     <div className="choose-amount">
-                                        <div className="text-title mb-3">Select Amount: <span className='text-title'>{selectedAmount > 0 ? `$${selectedAmount}` : 'Please select'}</span></div>
-                                        <div className="list-amounts grid grid-cols-4 gap-3 mt-3">
-                                            {giftCardAmounts.map((amount, index) => (
-                                                <div
-                                                    className={`amount-item h-12 flex items-center justify-center text-button rounded-lg bg-white border border-line cursor-pointer duration-300 hover:border-black ${selectedAmount === amount ? 'active border-black bg-black text-white' : ''}`}
-                                                    key={index}
-                                                    onClick={() => handleSelectAmount(amount)}
-                                                >
-                                                    ${amount}
-                                                </div>
-                                            ))}
+                                        <div className="text-title mb-3">
+                                            Select Amount:
+                                            <span className='text-title ml-2'>
+                                                {selectedAmount > 0 ? `KES ${selectedAmount}` : 'Please select'}
+                                            </span>
                                         </div>
-                                    </div>
 
-                                    {/* Recipient Information */}
-                                    <div className="recipient-info mt-6">
-                                        <div className="text-title mb-3">Recipient Information</div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="input-group">
-                                                <label className="caption1 text-secondary mb-2 block">Recipient Name *</label>
-                                                <input
-                                                    type="text"
-                                                    value={recipientName}
-                                                    onChange={(e) => setRecipientName(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:border-black"
-                                                    placeholder="Enter recipient name"
-                                                />
+                                        {isLoadingVariants ? (
+                                            <div className="flex items-center justify-center py-8">
+                                                <div className="text-secondary">Loading gift card amounts...</div>
                                             </div>
-                                            <div className="input-group">
-                                                <label className="caption1 text-secondary mb-2 block">Recipient Email *</label>
-                                                <input
-                                                    type="email"
-                                                    value={recipientEmail}
-                                                    onChange={(e) => setRecipientEmail(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:border-black"
-                                                    placeholder="Enter recipient email"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                        ) : (
+                                            <div className="list-amounts grid grid-cols-3 gap-3 mt-3">
+                                                {giftCardVariants.map((variant, index) => {
+                                                    const amount = Math.floor(parseFloat(variant.price.amount));
+                                                    const currencySymbol = variant.price.currencyCode === 'USD' ? '$' : 'KES ';
 
-                                    {/* Sender Information */}
-                                    <div className="sender-info mt-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="input-group">
-                                                <label className="caption1 text-secondary mb-2 block">Your Name *</label>
-                                                <input
-                                                    type="text"
-                                                    value={senderName}
-                                                    onChange={(e) => setSenderName(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:border-black"
-                                                    placeholder="Enter your name"
-                                                />
-                                            </div>
-                                            <div className="input-group">
-                                                <label className="caption1 text-secondary mb-2 block">Delivery Date (Optional)</label>
-                                                <input
-                                                    type="date"
-                                                    value={deliveryDate}
-                                                    onChange={(e) => setDeliveryDate(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:border-black"
-                                                    min={new Date().toISOString().split('T')[0]}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Personal Message */}
-                                    <div className="personal-message mt-4">
-                                        <label className="caption1 text-secondary mb-2 block">Personal Message (Optional)</label>
-                                        <textarea
-                                            value={personalMessage}
-                                            onChange={(e) => setPersonalMessage(e.target.value)}
-                                            className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:border-black resize-none"
-                                            rows={4}
-                                            placeholder="Write a personal message..."
-                                            maxLength={200}
-                                        />
-                                        <div className="text-right caption1 text-secondary mt-1">
-                                            {personalMessage.length}/200 characters
-                                        </div>
-                                    </div>
-
-                                    {/* Add to Cart Button */}
-                                    <div className="button-block mt-6">
-                                        <div
-                                            onClick={isFormValid ? handleAddToCart : undefined}
-                                            className={`button-main w-full text-center ${isFormValid ? 'bg-black text-white cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                                        >
-                                            Add Gift Card To Cart
-                                        </div>
-                                        {!isFormValid && (
-                                            <div className="caption1 text-red mt-2 text-center">
-                                                Please fill in all required fields and select an amount
+                                                    return (
+                                                        <div
+                                                            className={`amount-item h-12 flex items-center justify-center text-button rounded-lg bg-white border border-line cursor-pointer duration-300 hover:border-black ${selectedAmount === amount ? 'active border-black bg-black text-white' : ''} ${!variant.availableForSale ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                            key={index}
+                                                            onClick={() => variant.availableForSale && handleSelectAmount(amount, variant.id)}
+                                                        >
+                                                            KES {amount}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
+
+                                        {!isLoadingVariants && giftCardVariants.length === 0 && (
+                                            <div className="text-center text-secondary py-4">
+                                                No gift card amounts available
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="button-block mt-6">
+                                        <div className="flex gap-4">
+                                            <div
+                                                onClick={isFormValid ? handleAddToCart : undefined}
+                                                className={`button-main w-full text-center ${isFormValid ? 'bg-white text-black border border-black cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                            >
+                                                Add To Cart
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="button-block mt-3">
+                                        <div
+                                            onClick={isFormValid && !isCheckoutLoading ? handleBuyItNow : undefined}
+                                            className={`button-main w-full text-center ${isFormValid && !isCheckoutLoading ? 'bg-black text-white cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                        >
+                                            {isCheckoutLoading ? 'Processing...' : 'Buy It Now'}
+                                        </div>
+
+                                        {!isFormValid && (
+                                            <div className="caption1 text-red mt-2 text-center">
+                                                Please select a gift card amount
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Gift Card Info */}
+                                    <div className="gift-card-info mt-6 p-4 bg-surface rounded-lg">
+                                        <div className="text-title mb-2">Gift Card Information</div>
+                                        <div className="text-secondary caption1">
+                                            • Digital gift card delivered via email<br/>
+                                            • No expiration date<br/>
+                                            • Can be used for any purchase on our website<br/>
+                                            • Remaining balance can be used for future purchases
+                                        </div>
                                     </div>
 
                                     {/* Share Section */}
@@ -258,91 +335,6 @@ const ModalGiftCardQuickview = () => {
                                                 <Icon.ShareNetwork weight='fill' className='heading6' />
                                             </div>
                                             <span>Share Gift Card</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Gift Card Info */}
-                                    <div className="more-infor mt-6">
-                                        <div className="flex items-center gap-4 flex-wrap">
-                                            <div className="flex items-center gap-1">
-                                                <Icon.Gift className='body1' />
-                                                <div className="text-title">Digital Delivery</div>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Icon.Clock className='body1' />
-                                                <div className="text-title">Never Expires</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center flex-wrap gap-1 mt-3">
-                                            <Icon.CreditCard className='body1' />
-                                            <span className="text-title">Redeemable online and in-store</span>
-                                        </div>
-                                        <div className="flex items-center flex-wrap gap-1 mt-3">
-                                            <Icon.ShieldCheck className='body1' />
-                                            <span className="text-title">Secure digital delivery</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Payment Methods */}
-                                    <div className="list-payment mt-7">
-                                        <div className="main-content lg:pt-8 pt-6 lg:pb-6 pb-4 sm:px-4 px-3 border border-line rounded-xl relative max-md:w-2/3 max-sm:w-full">
-                                            <div className="heading6 px-5 bg-white absolute -top-[14px] left-1/2 -translate-x-1/2 whitespace-nowrap">Guaranteed safe checkout</div>
-                                            <div className="list grid grid-cols-6">
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-0.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-1.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-2.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-3.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-4.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                                <div className="item flex items-center justify-center lg:px-3 px-1">
-                                                    <Image
-                                                        src={'/images/payment/Frame-5.png'}
-                                                        width={500}
-                                                        height={450}
-                                                        alt='payment'
-                                                        className='w-full'
-                                                    />
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

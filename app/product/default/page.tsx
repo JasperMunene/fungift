@@ -32,6 +32,12 @@ export default async function ProductPage({ params }: PageProps) {
         // transform for your frontend product type
         const product: ProductType = transformShopifyProductDetailed(shopifyProduct);
 
+        // Additional validation to ensure product has required fields
+        if (!product || !product.id || !product.name) {
+            console.error('Transformed product is invalid:', product);
+            return notFound();
+        }
+
         return (
             <>
                 <TopNavOne props="style-one bg-black" slogan="New customers save 10% with the code GET10" />

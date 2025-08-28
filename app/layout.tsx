@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
+import PerformanceProvider from '@/components/providers/performance-provider';
 import CountdownTimeType from '@/type/CountdownType'
 import { countdownTime } from '@/store/countdownTime'
 
@@ -28,6 +29,11 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
   },
+  other: {
+    'theme-color': '#D2EF9A',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+  }
 };
 
 export default function RootLayout({
@@ -39,16 +45,18 @@ export default function RootLayout({
       <GlobalProvider>
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers>
-          {children}
-          <ModalCart serverTimeLeft={serverTimeLeft} />
-          <ModalWishlist />
-          <ModalSearch />
-          <ModalQuickview />
-          <ModalCompare />
-          <ModalGiftCardQuickview />
-          <Toaster />
-        </Providers>
+        <PerformanceProvider>
+          <Providers>
+            {children}
+            <ModalCart serverTimeLeft={serverTimeLeft} />
+            <ModalWishlist />
+            <ModalSearch />
+            <ModalQuickview />
+            <ModalCompare />
+            <ModalGiftCardQuickview />
+            <Toaster />
+          </Providers>
+        </PerformanceProvider>
       </body>
     </html>
       </GlobalProvider>

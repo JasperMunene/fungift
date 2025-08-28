@@ -152,17 +152,17 @@ const GiftCard: React.FC<ProductProps> = ({ data, type, style }) => {
                                             </>
                                         )}
                                     </div>
-                                    <div
-                                        className={`compare-btn w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative mt-2 ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleAddToCompare()
-                                        }}
-                                    >
-                                        <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>
-                                        <Icon.Repeat size={18} className='compare-icon' />
-                                        <Icon.CheckCircle size={20} className='checked-icon' />
-                                    </div>
+                                    {/*<div*/}
+                                    {/*    className={`compare-btn w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative mt-2 ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}*/}
+                                    {/*    onClick={(e) => {*/}
+                                    {/*        e.stopPropagation()*/}
+                                    {/*        handleAddToCompare()*/}
+                                    {/*    }}*/}
+                                    {/*>*/}
+                                    {/*    <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>*/}
+                                    {/*    <Icon.Repeat size={18} className='compare-icon' />*/}
+                                    {/*    <Icon.CheckCircle size={20} className='checked-icon' />*/}
+                                    {/*</div>*/}
                                     {style === 'style-3' || style === 'style-4' ? (
                                         <div
                                             className={`quick-view-btn w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative mt-2 ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
@@ -332,17 +332,17 @@ const GiftCard: React.FC<ProductProps> = ({ data, type, style }) => {
                                                 </>
                                             )}
                                         </div>
-                                        <div
-                                            className={`compare-btn w-9 h-9 flex items-center justify-center rounded-full bg-white duration-300 relative ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleAddToCompare()
-                                            }}
-                                        >
-                                            <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>
-                                            <Icon.Repeat size={18} className='compare-icon' />
-                                            <Icon.CheckCircle size={20} className='checked-icon' />
-                                        </div>
+                                        {/*<div*/}
+                                        {/*    className={`compare-btn w-9 h-9 flex items-center justify-center rounded-full bg-white duration-300 relative ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}*/}
+                                        {/*    onClick={(e) => {*/}
+                                        {/*        e.stopPropagation()*/}
+                                        {/*        handleAddToCompare()*/}
+                                        {/*    }}*/}
+                                        {/*>*/}
+                                        {/*    <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>*/}
+                                        {/*    <Icon.Repeat size={18} className='compare-icon' />*/}
+                                        {/*    <Icon.CheckCircle size={20} className='checked-icon' />*/}
+                                        {/*</div>*/}
                                         <div
                                             className={`quick-view-btn w-9 h-9 flex items-center justify-center rounded-full bg-white duration-300 relative ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
                                             onClick={(e) => {
@@ -660,17 +660,17 @@ const GiftCard: React.FC<ProductProps> = ({ data, type, style }) => {
                                                         </>
                                                     )}
                                                 </div>
-                                                <div
-                                                    className={`compare-btn w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleAddToCompare()
-                                                    }}
-                                                >
-                                                    <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>
-                                                    <Icon.ArrowsCounterClockwise size={18} className='compare-icon' />
-                                                    <Icon.CheckCircle size={20} className='checked-icon' />
-                                                </div>
+                                                {/*<div*/}
+                                                {/*    className={`compare-btn w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}*/}
+                                                {/*    onClick={(e) => {*/}
+                                                {/*        e.stopPropagation()*/}
+                                                {/*        handleAddToCompare()*/}
+                                                {/*    }}*/}
+                                                {/*>*/}
+                                                {/*    <div className="tag-action bg-black text-white caption2 px-1.5 py-0.5 rounded-sm">Compare Product</div>*/}
+                                                {/*    <Icon.ArrowsCounterClockwise size={18} className='compare-icon' />*/}
+                                                {/*    <Icon.CheckCircle size={20} className='checked-icon' />*/}
+                                                {/*</div>*/}
                                                 <div
                                                     className="quick-view-btn-list w-[32px] h-[32px] flex items-center justify-center rounded-full bg-white duration-300 relative"
                                                     onClick={(e) => {
@@ -716,16 +716,16 @@ const GiftCard: React.FC<ProductProps> = ({ data, type, style }) => {
                                     </>
                                 )}
                             </span>
-                            <span
-                                className={`compare-btn w-8 h-8 bg-white flex items-center justify-center rounded-full box-shadow-sm duration-300 ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleAddToCompare()
-                                }}
-                            >
-                                <Icon.Repeat size={18} className='compare-icon' />
-                                <Icon.CheckCircle size={20} className='checked-icon' />
-                            </span>
+                            {/*<span*/}
+                            {/*    className={`compare-btn w-8 h-8 bg-white flex items-center justify-center rounded-full box-shadow-sm duration-300 ${compareState.compareArray.some(item => item.id === data.id) ? 'active' : ''}`}*/}
+                            {/*    onClick={(e) => {*/}
+                            {/*        e.stopPropagation()*/}
+                            {/*        handleAddToCompare()*/}
+                            {/*    }}*/}
+                            {/*>*/}
+                            {/*    <Icon.Repeat size={18} className='compare-icon' />*/}
+                            {/*    <Icon.CheckCircle size={20} className='checked-icon' />*/}
+                            {/*</span>*/}
                             <span
                                 className="quick-view-btn w-8 h-8 bg-white flex items-center justify-center rounded-full box-shadow-sm duration-300"
                                 onClick={(e) => {

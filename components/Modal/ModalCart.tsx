@@ -34,12 +34,111 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
             setRecommendedLoading(true);
             setRecommendedError(null);
 
-            // Dynamically import Shopify functions to reduce initial bundle size
-            const { getCollectionProducts, transformShopifyProduct } = await import('@/lib/shopify-collections');
+            // Use a more direct approach to fetch products from Shopify
+            const query = `
+                query getRecommendedProducts($first: Int!) {
+                    products(first: $first, sortKey: BEST_SELLING) {
+                        edges {
+                            node {
+                                id
+                                title
+                                handle
+                                description
+                                tags
+                                priceRange {
+                                    minVariantPrice {
+                                        amount
+                                        currencyCode
+                                    }
+                                }
+                                compareAtPriceRange {
+                                    minVariantPrice {
+                                        amount
+                                        currencyCode
+                                    }
+                                }
+                                images(first: 5) {
+                                    edges {
+                                        node {
+                                            url
+                                            altText
+                                        }
+                                    }
+                                }
+                                variants(first: 1) {
+                                    edges {
+                                        node {
+                                            id
+                                            title
+                                            availableForSale
+                                        }
+                                    }
+                                }
+                                availableForSale
+                            }
+                        }
+                    }
+                }
+            `;
 
-            // Fetch products from a collection (e.g., 'featured' or 'best-sellers')
-            const shopifyProducts = await getCollectionProducts('featured', 4);
-            const transformedProducts = shopifyProducts.map(transformShopifyProduct);
+            const variables = { first: 6 };
+
+            const response = await fetch(
+                `https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/api/2025-01/graphql.json`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Shopify-Storefront-Access-Token':
+                            process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN!,
+                    },
+                    body: JSON.stringify({ query, variables }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch recommended products');
+            }
+
+            const result = await response.json();
+
+            if (result.errors) {
+                throw new Error(result.errors.map((e: any) => e.message).join(', '));
+            }
+
+            const products = result.data?.products?.edges || [];
+
+            const transformedProducts: ProductType[] = products.map((edge: any) => {
+                const product = edge.node;
+                const price = parseFloat(product.priceRange.minVariantPrice.amount);
+                const compareAtPrice = product.compareAtPriceRange?.minVariantPrice
+                    ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+                    : null;
+
+                return {
+                    id: product.id,
+                    name: product.title,
+                    description: product.description || '',
+                    price: Math.floor(price),
+                    originPrice: compareAtPrice ? Math.floor(compareAtPrice) : Math.floor(price),
+                    images: product.images.edges.map((img: any) => img.node.url),
+                    category: 'recommended',
+                    type: product.tags.includes('gift-card') ? 'gift-card' : 'product',
+                    sizes: ['M'], // Default size
+                    colors: ['default'],
+                    quantityPurchase: 1,
+                    variation: [],
+                    thumbImage: product.images.edges[0]?.node.url || '',
+                    tags: product.tags,
+                    handle: product.handle,
+                    availableForSale: product.availableForSale,
+                    variantId: product.variants.edges[0]?.node.id || product.id,
+                    new: false,
+                    sale: compareAtPrice ? compareAtPrice > price : false,
+                    rate: 5,
+                    gender: 'unisex' as const,
+                };
+            }).filter((product: ProductType) => product.availableForSale);
 
             setRecommendedProducts(transformedProducts);
         } catch (err) {
@@ -75,31 +174,90 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
 
     cartState.cartArray.map(item => totalCart += item.price * item.quantity)
 
-    // Update the handleCheckout function in your ModalCart component
+    // Updated checkout function to properly handle variant IDs
     const handleCheckout = async () => {
+        if (cartState.cartArray.length === 0) {
+            alert('Your cart is empty');
+            return;
+        }
+
         setIsProcessing(true);
         try {
-            // Prepare line items for the API
-            const lineItems = cartState.cartArray.map(item => {
-                const lineItem: any = {
-                    variantId: item.id,
-                    quantity: item.quantity,
-                };
+            // Process each cart item to get proper variant IDs
+            const lineItemsPromises = cartState.cartArray.map(async (item) => {
+                let variantId = item.variantId;
 
-                // If this is a gift card, add custom attributes
-                if (item.type === 'gift-card' || item.tags?.includes('gift-card')) {
-                    lineItem.customAttributes = [
-                        {
-                            key: "amount",
-                            value: item.price.toString()
+                // If we don't have a proper variant ID, fetch it from Shopify
+                if (!variantId || !variantId.includes('gid://shopify/ProductVariant/')) {
+                    try {
+                        console.log(`Fetching variants for item: ${item.name} (${item.id})`);
+
+                        const variantsResponse = await fetch(`/api/get-variants?productId=${encodeURIComponent(item.id)}`);
+
+                        if (variantsResponse.ok) {
+                            const variantsData = await variantsResponse.json();
+                            const variants = variantsData.variants;
+
+                            if (variants && variants.length > 0) {
+                                // Find matching variant based on selected options or use first available
+                                let selectedVariant = variants[0];
+
+                                // Try to match selected size and color
+                                if ((item.selectedSize || item.selectedColor) && variants.length > 1) {
+                                    const matchingVariant = variants.find((variant: any) => {
+                                        const options = variant.selectedOptions;
+
+                                        const sizeMatch = !item.selectedSize || options.some((opt: any) =>
+                                            opt.name.toLowerCase().includes('size') &&
+                                            opt.value.toLowerCase() === item.selectedSize?.toLowerCase()
+                                        );
+
+                                        const colorMatch = !item.selectedColor || options.some((opt: any) =>
+                                            opt.name.toLowerCase().includes('color') &&
+                                            opt.value.toLowerCase() === item.selectedColor?.toLowerCase()
+                                        );
+
+                                        return sizeMatch && colorMatch && variant.availableForSale;
+                                    });
+
+                                    if (matchingVariant) {
+                                        selectedVariant = matchingVariant;
+                                    }
+                                }
+
+                                variantId = selectedVariant.id;
+                                console.log(`Found variant ID for ${item.name}: ${variantId}`);
+                            } else {
+                                throw new Error(`No variants found for ${item.name}`);
+                            }
+                        } else {
+                            throw new Error(`Failed to fetch variants for ${item.name}`);
                         }
-                    ];
+                    } catch (variantError) {
+                        console.error(`Error getting variant for ${item.name}:`, variantError);
+                        throw new Error(`Cannot checkout ${item.name}: Invalid product variant`);
+                    }
                 }
 
-                return lineItem;
+                return {
+                    variantId: variantId,
+                    quantity: item.quantity,
+                };
             });
 
-            console.log('Sending line items to API:', lineItems);
+            // Wait for all variant IDs to be resolved
+            const lineItems = await Promise.all(lineItemsPromises);
+
+            console.log('Final line items for checkout:', lineItems);
+
+            // Validate all variant IDs
+            const invalidItems = lineItems.filter(item =>
+                !item.variantId || !item.variantId.includes('gid://shopify/ProductVariant/')
+            );
+
+            if (invalidItems.length > 0) {
+                throw new Error('Some items in your cart have invalid variant IDs. Please try removing and re-adding them.');
+            }
 
             const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -109,18 +267,24 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                 body: JSON.stringify({ lineItems }),
             });
 
+            const result = await response.json();
+            console.log('Checkout API response:', result);
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Checkout failed');
+                throw new Error(result.error || 'Checkout failed');
             }
 
-            const data = await response.json();
-
             // Redirect to Shopify checkout
-            window.location.href = data.webUrl;
-        } catch (error) {
+            if (result.webUrl) {
+                console.log('Redirecting to checkout:', result.webUrl);
+                window.location.href = result.webUrl;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+
+        } catch (error: any) {
             console.error('Error during checkout:', error);
-            alert('Checkout failed. Please try again.');
+            alert(error.message || 'Checkout failed. Please try again.');
         } finally {
             setIsProcessing(false);
         }
@@ -156,11 +320,15 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                     </div>
                                 ))
                             ) : recommendedError ? (
-                                <div className="text-red-500 py-5">Error loading recommendations</div>
+                                <div className="text-red-500 py-5 text-center">
+                                    <div className="caption1">Unable to load recommendations</div>
+                                </div>
                             ) : recommendedProducts.length === 0 ? (
-                                <div className="text-gray-500 py-5">No recommendations available</div>
+                                <div className="text-gray-500 py-5 text-center">
+                                    <div className="caption1">No recommendations available</div>
+                                </div>
                             ) : (
-                                recommendedProducts.map((product) => (
+                                recommendedProducts.slice(0, 4).map((product) => (
                                     <div key={product.id} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
                                         <div className="infor flex items-center gap-5">
                                             <div className="bg-img">
@@ -177,9 +345,14 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                                 <div className="name text-button">{product.name}</div>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <div className="product-price text-title">KES {product.price}</div>
-                                                    {product.originPrice && (
+                                                    {product.originPrice && product.originPrice > product.price && (
                                                         <div className="product-origin-price text-title text-secondary2">
                                                             <del>KES {product.originPrice}</del>
+                                                        </div>
+                                                    )}
+                                                    {product.sale && (
+                                                        <div className="product-sale caption2 font-semibold bg-red px-3 py-0.5 inline-block rounded-full">
+                                                            Sale
                                                         </div>
                                                     )}
                                                 </div>
@@ -210,59 +383,66 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                             </div>
                         </div>
                         <div className="time px-6">
-                            <div className=" flex items-center gap-3 px-5 py-3 bg-green rounded-lg">
-                                <p className='text-3xl'>🔥</p>
-                                <div className="caption1">Your cart will expire in <span className='text-red caption1 font-semibold'>{timeLeft.minutes}:
-                                    {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}</span> minutes!<br />
-                                    Please checkout now before your items sell out!</div>
-                            </div>
+                            {/*<div className=" flex items-center gap-3 px-5 py-3 bg-green rounded-lg">*/}
+                            {/*    <p className='text-3xl'>🔥</p>*/}
+                            {/*    <div className="caption1">Your cart will expire in <span className='text-red caption1 font-semibold'>{timeLeft.minutes}:*/}
+                            {/*        {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}</span> minutes!<br />*/}
+                            {/*        Please checkout now before your items sell out!</div>*/}
+                            {/*</div>*/}
                         </div>
                         <div className="heading banner mt-3 px-6">
-                            <div className="text">Buy <span className="text-button"> KES <span className="more-price">{moneyForFreeship - totalCart > 0 ? (<>{moneyForFreeship - totalCart}</>) : (0)}</span> </span>
-                                <span>more to get </span>
-                                <span className="text-button">freeship</span></div>
-                            <div className="tow-bar-block mt-3">
-                                <div
-                                    className="progress-line"
-                                    style={{ width: totalCart <= moneyForFreeship ? `${(totalCart / moneyForFreeship) * 100}%` : `100%` }}
-                                ></div>
-                            </div>
+                            {/*<div className="tow-bar-block mt-3">*/}
+                            {/*    <div*/}
+                            {/*        className="progress-line"*/}
+                            {/*        style={{ width: totalCart <= moneyForFreeship ? `${(totalCart / moneyForFreeship) * 100}%` : `100%` }}*/}
+                            {/*    ></div>*/}
+                            {/*</div>*/}
                         </div>
                         <div className="list-product px-6">
-                            {cartState.cartArray.map((product) => (
-                                <div key={product.id} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
-                                    <div className="infor flex items-center gap-3 w-full">
-                                        <div className="bg-img w-[100px] aspect-square flex-shrink-0 rounded-lg overflow-hidden">
-                                            <Image
-                                                src={product.images[0]}
-                                                width={100}
-                                                height={100}
-                                                alt={product.name}
-                                                className='w-full h-full'
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                        <div className='w-full'>
-                                            <div className="flex items-center justify-between w-full">
-                                                <div className="name text-button">{product.name}</div>
-                                                <div
-                                                    className="remove-cart-btn caption1 font-semibold text-red underline cursor-pointer"
-                                                    onClick={() => removeFromCart(product.id)}
-                                                >
-                                                    Remove
-                                                </div>
+                            {cartState.cartArray.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <div className="caption1 text-secondary">Your cart is empty</div>
+                                </div>
+                            ) : (
+                                cartState.cartArray.map((product) => (
+                                    <div key={product.id} className='item py-5 flex items-center justify-between gap-3 border-b border-line'>
+                                        <div className="infor flex items-center gap-3 w-full">
+                                            <div className="bg-img w-[100px] aspect-square flex-shrink-0 rounded-lg overflow-hidden">
+                                                <Image
+                                                    src={product.images[0]}
+                                                    width={100}
+                                                    height={100}
+                                                    alt={product.name}
+                                                    className='w-full h-full'
+                                                    loading="lazy"
+                                                />
                                             </div>
-                                            <div className="flex items-center justify-between gap-2 mt-3 w-full">
-                                                <div className="flex items-center text-secondary2 capitalize">
-                                                    {product.selectedSize || (product.sizes && product.sizes[0]) || 'N/A'}/
-                                                    {product.selectedColor || (product.variation && product.variation[0] && product.variation[0].color) || 'N/A'}
+                                            <div className='w-full'>
+                                                <div className="flex items-center justify-between w-full">
+                                                    <div className="name text-button">{product.name}</div>
+                                                    <div
+                                                        className="remove-cart-btn caption1 font-semibold text-red underline cursor-pointer"
+                                                        onClick={() => removeFromCart(product.id)}
+                                                    >
+                                                        Remove
+                                                    </div>
                                                 </div>
-                                                <div className="product-price text-title">KES {product.price}</div>
+                                                <div className="flex items-center justify-between gap-2 mt-3 w-full">
+                                                    <div className="flex items-center text-secondary2 capitalize">
+                                                        <span className="caption1">
+                                                            Qty: {product.quantity}
+                                                            {(product.selectedSize || product.selectedColor) && (
+                                                                <> • {product.selectedSize || 'N/A'}/{product.selectedColor || 'N/A'}</>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div className="product-price text-title">KES {product.price * product.quantity}</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                         <div className="footer-modal bg-white absolute bottom-0 left-0 w-full">
                             <div className="flex items-center justify-center lg:gap-14 gap-8 px-6 py-4 border-b border-line">
@@ -295,7 +475,7 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                             <div className="block-button text-center p-6">
                                 <div className="flex items-center gap-4">
                                     <button
-                                        className={`button-main basis-full text-center uppercase ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`button-main basis-full text-center uppercase ${isProcessing || cartState.cartArray.length === 0 ? 'opacity-70 cursor-not-allowed' : ''}`}
                                         onClick={handleCheckout}
                                         disabled={isProcessing || cartState.cartArray.length === 0}
                                     >
@@ -337,10 +517,10 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                                 defaultValue={'Country/region'}
                                             >
                                                 <option value="Country/region" disabled>Country/region</option>
-                                                <option value="France">France</option>
-                                                <option value="Spain">Spain</option>
-                                                <option value="UK">UK</option>
-                                                <option value="USA">USA</option>
+                                                <option value="Kenya">Kenya</option>
+                                                <option value="Uganda">Uganda</option>
+                                                <option value="Tanzania">Tanzania</option>
+                                                <option value="Rwanda">Rwanda</option>
                                             </select>
                                             <Icon.CaretDown size={12} className='absolute top-1/2 -translate-y-1/2 md:right-5 right-2' />
                                         </div>
@@ -355,10 +535,10 @@ const ModalCart = ({ serverTimeLeft }: { serverTimeLeft: CountdownTimeType }) =>
                                                 defaultValue={'State'}
                                             >
                                                 <option value="State" disabled>State</option>
-                                                <option value="Paris">Paris</option>
-                                                <option value="Madrid">Madrid</option>
-                                                <option value="London">London</option>
-                                                <option value="New York">New York</option>
+                                                <option value="Nairobi">Nairobi</option>
+                                                <option value="Mombasa">Mombasa</option>
+                                                <option value="Kisumu">Kisumu</option>
+                                                <option value="Nakuru">Nakuru</option>
                                             </select>
                                             <Icon.CaretDown size={12} className='absolute top-1/2 -translate-y-1/2 md:right-5 right-2' />
                                         </div>

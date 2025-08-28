@@ -1,8 +1,10 @@
 interface Variation {
+    id?: string;
     color: string;
     colorCode?: string;
     colorImage: string;
     image: string;
+    variantId?: string;
 }
 
 export interface ProductType {
@@ -31,4 +33,7 @@ export interface ProductType {
     tags?: string[];
     features?: string[];
     SKU?: string;
+    variantId?: string;
+    shopifyVariantId?: string;
+    availableForSale?: boolean;
 }

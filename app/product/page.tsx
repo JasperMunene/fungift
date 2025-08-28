@@ -86,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ${parseFloat(firstVariant.price.amount).toFixed(2)} {firstVariant.price.currencyCode}
             </span>
                         <Link
-                            href={`/products/${product.handle}`}
+                            href={`/product/default/${product.handle}`}
                             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                         >
                             View Details

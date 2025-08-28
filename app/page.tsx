@@ -1,11 +1,9 @@
 import TopNavOne from '@/components/Header/TopNav/TopNavOne'
-import Footer from '@/components/layout/footer';
-import  TrendingGiftCards  from '@/components/home/trending-gift-cards';
 import Benefit from '@/components/Benefit/Benefit'
 import Slider from '@/components/Slider/Slider'
-import BestSeller from '@/components/BestSeller/BestSeller'
-import WhyChooseUs from "@/components/WhyChooseUs/WhyChooseUs";
 import MenuOne from "@/components/Header/Menu/MenuOne";
+import AsyncSections from '@/components/home/async-sections';
+import { LazyWhyChooseUs, LazyFooter } from '@/components/ui/lazy-components';
 import React from "react";
 
 export default function Home() {
@@ -19,11 +17,13 @@ export default function Home() {
         <Slider />
       </div>
         <Benefit props="md:py-20 py-10" />
-          <BestSeller collectionHandle="best-sellers" limit={8} />
-        <TrendingGiftCards collectionHandle='gift-cards' limit={8} />
+        <AsyncSections 
+          bestSellersProps={{ collectionHandle: "best-sellers", limit: 8 }}
+          giftCardsProps={{ collectionHandle: 'gift-cards', limit: 8 }}
+        />
         {/*<Features />*/}
-          <WhyChooseUs />
-          <Footer />
+          <LazyWhyChooseUs />
+          <LazyFooter />
       </>
   );
 }
