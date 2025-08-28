@@ -144,6 +144,16 @@ const MenuOne: React.FC<Props> = ({ props }) => {
                                         className={`${openSubNavMobile === 3 ? 'open' : ''}`}
                                         onClick={() => handleOpenSubNavMobile(3)}
                                     >
+                                        <a href={'/'} className='text-xl font-semibold flex items-center justify-between mt-5'>Home
+                                            <span className='text-right'>
+                                                <Icon.CaretRight size={20} />
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li
+                                        className={`${openSubNavMobile === 3 ? 'open' : ''}`}
+                                        onClick={() => handleOpenSubNavMobile(3)}
+                                    >
                                         <a href={'/shop/gift-cards'} className='text-xl font-semibold flex items-center justify-between mt-5'>Gift Cards
                                             <span className='text-right'>
                                                 <Icon.CaretRight size={20} />
