@@ -167,29 +167,29 @@ const MenuOne: React.FC<Props> = ({ props }) => {
                 </div>
             </div>
 
-            <div className="menu_bar fixed bg-white bottom-0 left-0 w-full h-[70px] sm:hidden z-[101]">
-                <div className="menu_bar-inner grid grid-cols-4 items-center h-full">
-                    <Link href={'/'} className='menu_bar-link flex flex-col items-center gap-1'>
-                        <Icon.House weight='bold' className='text-2xl' />
-                        <span className="menu_bar-title caption2 font-semibold">Home</span>
-                    </Link>
-                    <Link href={'/shop/filter-canvas'} className='menu_bar-link flex flex-col items-center gap-1'>
-                        <Icon.List weight='bold' className='text-2xl' />
-                        <span className="menu_bar-title caption2 font-semibold">Category</span>
-                    </Link>
-                    <Link href={'/search-result'} className='menu_bar-link flex flex-col items-center gap-1'>
-                        <Icon.MagnifyingGlass weight='bold' className='text-2xl' />
-                        <span className="menu_bar-title caption2 font-semibold">Search</span>
-                    </Link>
-                    <Link href={'/cart'} className='menu_bar-link flex flex-col items-center gap-1'>
-                        <div className="icon relative">
-                            <Icon.Handbag weight='bold' className='text-2xl' />
-                            <span className="quantity cart-quantity absolute -right-1.5 -top-1.5 text-xs text-white bg-black w-4 h-4 flex items-center justify-center rounded-full">{cartState.cartArray.length}</span>
-                        </div>
-                        <span className="menu_bar-title caption2 font-semibold">Cart</span>
-                    </Link>
-                </div>
-            </div>
+            {/*<div className="menu_bar fixed bg-white bottom-0 left-0 w-full h-[70px] sm:hidden z-[101]">*/}
+            {/*    <div className="menu_bar-inner grid grid-cols-4 items-center h-full">*/}
+            {/*        <Link href={'/'} className='menu_bar-link flex flex-col items-center gap-1'>*/}
+            {/*            <Icon.House weight='bold' className='text-2xl' />*/}
+            {/*            <span className="menu_bar-title caption2 font-semibold">Home</span>*/}
+            {/*        </Link>*/}
+            {/*        <Link href={'/shop/filter-canvas'} className='menu_bar-link flex flex-col items-center gap-1'>*/}
+            {/*            /!*<Icon.List weight='bold' className='text-2xl' />*!/*/}
+            {/*            /!*<span className="menu_bar-title caption2 font-semibold">Category</span>*!/*/}
+            {/*        </Link>*/}
+            {/*        <Link href={'/search-result'} className='menu_bar-link flex flex-col items-center gap-1'>*/}
+            {/*            /!*<Icon.MagnifyingGlass weight='bold' className='text-2xl' />*!/*/}
+            {/*            /!*<span className="menu_bar-title caption2 font-semibold">Search</span>*!/*/}
+            {/*        </Link>*/}
+            {/*        <Link href={'/cart'} className='menu_bar-link flex flex-col items-center gap-1'>*/}
+            {/*            <div className="icon relative">*/}
+            {/*                <Icon.Handbag weight='bold' className='text-2xl' />*/}
+            {/*                <span className="quantity cart-quantity absolute -right-1.5 -top-1.5 text-xs text-white bg-black w-4 h-4 flex items-center justify-center rounded-full">{cartState.cartArray.length}</span>*/}
+            {/*            </div>*/}
+            {/*            <span className="menu_bar-title caption2 font-semibold">Cart</span>*/}
+            {/*        </Link>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
         </>
     )
 }
