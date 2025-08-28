@@ -6,7 +6,7 @@ import type { ProductType } from '@/type/ProductType';
 import { useCart } from '@/context/CartContext';
 import { useModalCartContext } from '@/context/ModalCartContext';
 import Image from 'next/image';
-import { Heart, ShoppingBag, CheckCircle, Repeat, Eye, Gift } from '@phosphor-icons/react';
+import { Heart, ShoppingBag, CheckCircle, Repeat, Eye, Gift, Plus, Minus, Star } from '@phosphor-icons/react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCompare } from '@/context/CompareContext';
 
@@ -189,80 +189,110 @@ export default function ProductDetail({ product, shopifyProduct }: Props) {
     };
 
     return (
-        <div className="product-detail grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white p-6 rounded-2xl border border-line">
+        <div className="product-detail max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 bg-white p-4 sm:p-6 lg:p-8 rounded-2xl border border-line shadow-sm">
             {/* Images */}
-            <div className="product-images">
+            <div className="product-images relative">
                 {isGiftCard && (
-                    <div className="gift-card-badge absolute top-4 left-4 z-10">
-                        <div className="flex items-center bg-green text-white px-3 py-1 rounded-full text-sm font-medium">
-                            <Gift size={16} className="mr-1" />
+                    <div className="gift-card-badge absolute top-3 left-3 z-10">
+                        <div className="flex items-center bg-gradient-to-r from-green to-green/80 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+                            <Gift size={16} className="mr-1.5" />
                             Gift Card
                         </div>
                     </div>
                 )}
 
-                <div className="main-image bg-white rounded-2xl overflow-hidden mb-4 border border-line relative">
-                    <Image
-                        src={selectedImage}
-                        alt={product.name}
-                        width={600}
-                        height={600}
-                        className="w-full h-auto object-cover aspect-square"
-                    />
+                <div className="main-image bg-surface rounded-2xl overflow-hidden mb-4 border border-line relative group">
+                    <div className="aspect-square relative overflow-hidden">
+                        <Image
+                            src={selectedImage}
+                            alt={product.name}
+                            width={800}
+                            height={800}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            priority
+                        />
+                    </div>
                 </div>
-                <div className="thumbs flex gap-3 overflow-x-auto pb-2">
-                    {product.images?.map((img: string, i: number) => (
-                        <button
-                            key={i}
-                            onClick={() => setSelectedImage(img)}
-                            className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === img ? 'border-black' : 'border-line hover:border-black/50'}`}
-                        >
-                            <Image
-                                src={img}
-                                alt={`${product.name}-${i}`}
-                                width={64}
-                                height={64}
-                                className="w-full h-full object-cover"
-                            />
-                        </button>
-                    ))}
+                
+                {/* Thumbnail Gallery */}
+                <div className="thumbs">
+                    <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                        {product.images?.map((img: string, i: number) => (
+                            <button
+                                key={i}
+                                onClick={() => setSelectedImage(img)}
+                                className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
+                                    selectedImage === img 
+                                        ? 'border-black shadow-lg ring-2 ring-black/20' 
+                                        : 'border-line hover:border-black/50'
+                                }`}
+                            >
+                                <Image
+                                    src={img}
+                                    alt={`${product.name}-${i}`}
+                                    width={80}
+                                    height={80}
+                                    className="w-full h-full object-cover"
+                                />
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             {/* Details */}
-            <div className="product-info">
-                <div className="product-tags flex gap-2 mb-4">
+            <div className="product-info space-y-6">
+                <div className="product-tags flex flex-wrap gap-2">
                     {product.new && (
-                        <div className="product-tag text-button-uppercase bg-green px-3 py-1 inline-block rounded-full">
+                        <div className="product-tag text-xs font-semibold uppercase bg-green text-white px-3 py-1.5 rounded-full shadow-sm">
                             New
                         </div>
                     )}
                     {product.sale && originPrice > price && !isGiftCard && (
-                        <div className="product-tag text-button-uppercase text-white bg-red px-3 py-1 inline-block rounded-full">
+                        <div className="product-tag text-xs font-semibold uppercase text-white bg-gradient-to-r from-red to-red/80 px-3 py-1.5 rounded-full shadow-sm">
                             Sale -{percentSale}%
                         </div>
                     )}
                     {isGiftCard && (
-                        <div className="product-tag text-button-uppercase bg-blue-500 text-white px-3 py-1 inline-block rounded-full">
+                        <div className="product-tag text-xs font-semibold uppercase bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full shadow-sm">
                             Digital Delivery
                         </div>
                     )}
                 </div>
 
-                <h1 className="text-3xl font-bold mb-3 text-title">{product.name}</h1>
+                <div className="product-header">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-title leading-tight">{product.name}</h1>
+                    {/* Rating placeholder - you can integrate actual ratings */}
+                    <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} size={16} weight="fill" className="text-yellow-400" />
+                            ))}
+                        </div>
+                        <span className="text-sm text-secondary2">(4.8) • 124 reviews</span>
+                    </div>
+                </div>
 
-                <div className="price-block flex items-center gap-3 mb-4">
-                    <div className="product-price text-2xl font-bold">
-                        KES {!isNaN(price) ? price.toFixed(2) : '0.00'}
+                <div className="price-block">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                        <div className="product-price text-2xl sm:text-3xl font-bold text-title">
+                            KES {!isNaN(price) ? price.toLocaleString() : '0'}
+                        </div>
+                        {product.sale && originPrice > price && !isGiftCard && (
+                            <div className="product-origin-price text-lg sm:text-xl text-secondary2 line-through">
+                                KES {originPrice.toLocaleString()}
+                            </div>
+                        )}
                     </div>
                     {product.sale && originPrice > price && !isGiftCard && (
-                        <div className="product-origin-price text-lg text-secondary2 line-through">
-                            KES {originPrice.toFixed(2)}
+                        <div className="text-sm text-green font-medium mt-1">
+                            You save KES {(originPrice - price).toLocaleString()}
                         </div>
                     )}
                 </div>
 
-                <div className="description mb-6 text-secondary" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                <div className="description text-secondary leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
 
                 {/* Amount Selection for Gift Cards */}
                 {isGiftCard && giftCardAmounts.length > 0 && (
@@ -351,84 +381,110 @@ export default function ProductDetail({ product, shopifyProduct }: Props) {
                 )}
 
                 {/* Quantity & Actions */}
-                <div className="mb-6">
-                    <div className="heading mb-3 font-medium">Quantity</div>
-                    <div className="flex items-center gap-4">
-                        <div className="quantity-selector flex items-center border border-line rounded-full overflow-hidden">
-                            <button
-                                onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                                className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                            >
-                                -
-                            </button>
-                            <div className="w-12 h-12 flex items-center justify-center">{quantity}</div>
-                            <button
-                                onClick={() => setQuantity(q => q + 1)}
-                                className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                            >
-                                +
-                            </button>
+                <div className="quantity-actions space-y-4">
+                    <div className="quantity-section">
+                        <div className="heading text-lg font-semibold mb-4 text-title">Quantity</div>
+                        <div className="flex items-center gap-4">
+                            <div className="quantity-selector flex items-center border-2 border-line rounded-xl overflow-hidden bg-surface">
+                                <button
+                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                    className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                    disabled={quantity <= 1}
+                                >
+                                    <Minus size={16} weight="bold" />
+                                </button>
+                                <div className="w-16 h-12 flex items-center justify-center font-semibold text-lg bg-white">{quantity}</div>
+                                <button
+                                    onClick={() => setQuantity(q => q + 1)}
+                                    className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                >
+                                    <Plus size={16} weight="bold" />
+                                </button>
+                            </div>
+                            
+                            <div className="flex-1 text-sm text-secondary2">
+                                {product.quantity && (
+                                    <span>{product.quantity - (product.sold || 0)} items available</span>
+                                )}
+                            </div>
                         </div>
+                    </div>
+
+                    <button
+                        onClick={onBuyNow}
+                        disabled={loading || !selectedVariant}
+                        className="w-full h-14 bg-gradient-to-r from-black to-gray-800 text-white rounded-xl flex items-center justify-center gap-3 hover:from-gray-800 hover:to-black transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                    >
+                        {loading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingBag size={22} weight="bold" />
+                                Buy Now - KES {(price * quantity).toLocaleString()}
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="action-buttons">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                            className={`action-btn h-12 rounded-xl border-2 flex items-center justify-center gap-2 transition-all duration-300 font-medium hover:scale-105 ${
+                                wishlistState.wishlistArray.some(item => item.id === product.id) 
+                                    ? 'bg-red/10 text-red border-red/30 shadow-lg' 
+                                    : 'border-line hover:bg-gray-50 hover:border-gray-300'
+                            }`}
+                            onClick={handleAddToWishlist}
+                        >
+                            {wishlistState.wishlistArray.some(item => item.id === product.id) ? (
+                                <Heart size={20} weight="fill" />
+                            ) : (
+                                <Heart size={20} />
+                            )}
+                            {wishlistState.wishlistArray.some(item => item.id === product.id) ? 'In Wishlist' : 'Add to Wishlist'}
+                        </button>
 
                         <button
-                            onClick={onBuyNow}
-                            disabled={loading || !selectedVariant}
-                            className="flex-1 h-12 bg-black text-white rounded-full flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-60"
+                            className="action-btn h-12 rounded-xl border-2 border-line flex items-center justify-center gap-2 transition-all duration-300 font-medium hover:scale-105 hover:bg-gray-50 hover:border-gray-300"
+                            onClick={() => {/* Add share functionality */}}
                         >
-                            {loading ? (
-                                <>Processing...</>
-                            ) : (
-                                <>
-                                    <ShoppingBag size={20} />
-                                    Buy Now
-                                </>
-                            )}
+                            <Eye size={20} />
+                            Share
                         </button>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3 mb-8">
-                    <button
-                        className={`action-btn flex-1 h-12 rounded-full border border-line flex items-center justify-center gap-2 transition-colors ${wishlistState.wishlistArray.some(item => item.id === product.id) ? 'bg-red/10 text-red border-red/20' : 'hover:bg-gray-100'}`}
-                        onClick={handleAddToWishlist}
-                    >
-                        {wishlistState.wishlistArray.some(item => item.id === product.id) ? (
-                            <Heart size={20} weight="fill" />
-                        ) : (
-                            <Heart size={20} />
-                        )}
-                        Wishlist
-                    </button>
-
-                    {/*<button*/}
-                    {/*    className={`action-btn flex-1 h-12 rounded-full border border-line flex items-center justify-center gap-2 transition-colors ${compareState.compareArray.some(item => item.id === product.id) ? 'bg-green/10 text-green border-green/20' : 'hover:bg-gray-100'}`}*/}
-                    {/*    onClick={handleAddToCompare}*/}
-                    {/*>*/}
-                    {/*    {compareState.compareArray.some(item => item.id === product.id) ? (*/}
-                    {/*        <CheckCircle size={20} weight="fill" />*/}
-                    {/*    ) : (*/}
-                    {/*        <Repeat size={20} />*/}
-                    {/*    )}*/}
-                    {/*    Compare*/}
-                    {/*</button>*/}
-                </div>
-
                 {/* Product Meta */}
-                <div className="product-meta border-t border-line pt-6">
-                    <div className="meta-item flex justify-between py-3 border-b border-line">
-                        <span className="font-medium text-secondary2">Brand</span>
-                        <span className="font-medium">{product.brand || 'Unknown'}</span>
-                    </div>
-                    <div className="meta-item flex justify-between py-3 border-b border-line">
-                        <span className="font-medium text-secondary2">Category</span>
-                        <span className="font-medium">{product.category}</span>
-                    </div>
-                    <div className="meta-item flex justify-between py-3">
-                        <span className="font-medium text-secondary2">SKU</span>
-                        <span className="font-medium">{selectedVariant?.id || product.id}</span>
+                <div className="product-meta border-t border-line pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4 text-title">Product Details</h3>
+                    <div className="space-y-3">
+                        <div className="meta-item flex justify-between items-center py-2">
+                            <span className="font-medium text-secondary2">Brand</span>
+                            <span className="font-semibold text-title">{product.brand || 'Unknown'}</span>
+                        </div>
+                        <div className="meta-item flex justify-between items-center py-2 border-t border-line">
+                            <span className="font-medium text-secondary2">Category</span>
+                            <span className="font-semibold text-title">{product.category}</span>
+                        </div>
+                        <div className="meta-item flex justify-between items-center py-2 border-t border-line">
+                            <span className="font-medium text-secondary2">SKU</span>
+                            <span className="font-mono text-sm font-semibold text-title">{selectedVariant?.id || product.id}</span>
+                        </div>
+                        {product.quantity && (
+                            <div className="meta-item flex justify-between items-center py-2 border-t border-line">
+                                <span className="font-medium text-secondary2">Stock</span>
+                                <span className={`font-semibold ${(product.quantity - (product.sold || 0)) > 10 ? 'text-green' : 'text-red'}`}>
+                                    {product.quantity - (product.sold || 0)} available
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     );
