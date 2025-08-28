@@ -1,4 +1,4 @@
-// app/shop/gifts/[slug]/page.tsx
+// app/shop/gift-card/[slug]/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
 import TopNavOne from '@/components/Header/TopNav/TopNavOne';
@@ -29,12 +29,12 @@ export async function generateStaticParams() {
     }
 }
 
-export default async function ProductPage({ params }: PageProps) {
+export default async function GiftCardPage({ params }: PageProps) {
     const { slug } = params;
 
     try {
-        const res = await getProduct(slug); // expects handle
-        const shopifyProduct = (res as any)?.product;
+        const collectionProducts = await getCollectionProductsDetailed('gift-cards', 250);
+        const shopifyProduct = collectionProducts.find(p => p.handle === slug);
 
         if (!shopifyProduct) {
             return notFound();
