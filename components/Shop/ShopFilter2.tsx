@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import * as Icon from "@phosphor-icons/react/dist/ssr";
 import { ProductType } from '@/type/ProductType'
-import Product from '../Product/Product';
+import Product2 from '../Product/Product2';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css'
 import HandlePagination from '../Other/HandlePagination';
@@ -542,7 +542,7 @@ const ShopFilter: React.FC<Props> = ({
                             ) : (
                                 currentProducts.map((item) => (
                                     <Link key={item.id} href={`/shop/gift-cards/${encodeURIComponent(item.slug || item.id)}`}>
-                                        <Product data={item} type='grid' style='style-1' />
+                                        <Product2 data={item} type='grid' style='style-1' />
                                     </Link>
                                 ))
                             )}
